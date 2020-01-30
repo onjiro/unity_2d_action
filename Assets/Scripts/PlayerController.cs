@@ -1,15 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class PlayerController : MonoBehaviour
 {
     // 物体の接触時に開けておく距離
     private const float SHELL_RADIUS = 0.01f;
+    // 重力による終端速度
+    private const float GRAVITY_TERMINAL_VELOCITY = -5f;
     public float maxSpeed;
     public float jumpInitialSpeed;
     private SpriteRenderer spriteRenderer;
     private Rigidbody2D rb2d;
+    private bool grounding;
     // 現在の速度
     private Vector2 velocity;
     // Physics Cycle の間に到達する最高速度
@@ -51,17 +55,30 @@ public class PlayerController : MonoBehaviour
     // FixedUpdate is called on Physics Cycle, called some times on frame
     void FixedUpdate()
     {
-        this.velocity = CalculateVelocity(this.velocity, this.targetVelocity);
+        this.grounding = IsGrounding(this.rb2d);
+        this.velocity = CalculateVelocity(this.velocity, this.targetVelocity, this.grounding);
         this.rb2d.MovePosition(CalculatePosition(this.rb2d.position, this.velocity));
     }
 
+    // 指定した Rigidbody2D が地面に設置しているか判定する
+    private bool IsGrounding(Rigidbody2D rb2d)
+    {
+        var hitBuffers = new List<RaycastHit2D>();
+        rb2d.Cast(new Vector2(0, -SHELL_RADIUS), this.contactFilter, hitBuffers, SHELL_RADIUS);
+
+        // 下方向にヒットした物体の法線ベクトルが (0, 1) となっているものがあれば設置しているとみなせる
+        return hitBuffers.Where(buffer => buffer.normal.y > 0).Count() > 0;
+    }
+
     // 物理演算ループでの速度を計算する
-    private Vector2 CalculateVelocity(Vector2 currentVelocity, Vector2 targetVelocity)
+    private Vector2 CalculateVelocity(Vector2 currentVelocity, Vector2 targetVelocity, bool grounding)
     {
         Vector2 velocity = new Vector2(targetVelocity.x, targetVelocity.y);
-
-        // 重力による終端速度を -5f とする
-        velocity.y = Mathf.Max((velocity + Physics2D.gravity * Time.deltaTime).y, -5f);
+        // 接地していなければ下方向に加速させる
+        if (!grounding)
+        {
+            velocity.y = Mathf.Max((velocity + Physics2D.gravity * Time.deltaTime).y, GRAVITY_TERMINAL_VELOCITY);
+        }
 
         return velocity;
     }
