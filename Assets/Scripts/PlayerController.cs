@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    // 物体の接触時に開けておく距離
+    private const float SHELL_RADIUS = 0.01f;
     public float maxSpeed;
     public float jumpInitialSpeed;
     private SpriteRenderer spriteRenderer;
@@ -57,7 +59,9 @@ public class PlayerController : MonoBehaviour
     private Vector2 CalculateVelocity(Vector2 currentVelocity, Vector2 targetVelocity)
     {
         Vector2 velocity = new Vector2(targetVelocity.x, targetVelocity.y);
-        velocity += Physics2D.gravity * Time.deltaTime;
+
+        // 重力による終端速度を -5f とする
+        velocity.y = Mathf.Max((velocity + Physics2D.gravity * Time.deltaTime).y, -5f);
 
         return velocity;
     }
@@ -66,24 +70,49 @@ public class PlayerController : MonoBehaviour
     private Vector2 CalculatePosition(Vector2 currentPosition, Vector2 velocity)
     {
         var deltaPosition = velocity * Time.deltaTime;
-        var deltaMagnitude = deltaPosition.magnitude;
 
         // 他のオブジェクトとのあたり判定を求める
+        // x方向、y方向をまとめて判定すると片方の軸しかあたり判定を検出せず、壁をすり抜けてしまうことがあるため
+        // x方向、y方向に分解して他のオブジェクトとの当たり判定を求める。
+
         // 結果は hitBuffers に入ってかえってくる
-        var hitBuffers = new List<RaycastHit2D>();
-        this.rb2d.Cast(deltaPosition, this.contactFilter, hitBuffers, deltaMagnitude + 0.01f);
-        foreach (var hitBuffer in hitBuffers)
+        var xHitBuffers = new List<RaycastHit2D>();
+        var xDelta = new Vector2(deltaPosition.x, 0);
+        this.rb2d.Cast(xDelta, this.contactFilter, xHitBuffers, xDelta.magnitude + SHELL_RADIUS);
+        foreach (var hitBuffer in xHitBuffers)
         {
             // ヒットしたオブジェクトからの法線ベクトルを求める
-            // y 方向が 0.01 より大きければ地面に設置したとみなせる
+            // 画面左下が (0, 0) という座標系になっているため、以下のようになる
+            // 左側の壁にぶつかると  (1, 0)
+            // 右側の壁にぶつかると (-1, 0)
             var normal = hitBuffer.normal;
-            Debug.Log($"normal({normal.x}, {normal.y}), {deltaPosition.y}, {hitBuffer.distance}, {hitBuffer.distance + 0.01f}");
-            if (normal.y > 0.01f)
+            if (normal.x > 0)
             {
-                if (deltaPosition.y < -hitBuffer.distance + 0.01f)
-                {
-                    deltaPosition.y = -hitBuffer.distance + 0.01f;
-                }
+                deltaPosition.x = Mathf.Max(deltaPosition.x, -hitBuffer.distance + SHELL_RADIUS);
+            }
+            else if (normal.x < 0)
+            {
+                deltaPosition.x = Mathf.Min(deltaPosition.x, hitBuffer.distance - SHELL_RADIUS);
+            }
+        }
+
+        var yHitBuffers = new List<RaycastHit2D>();
+        var yDelta = new Vector2(0, deltaPosition.y);
+        this.rb2d.Cast(yDelta, this.contactFilter, yHitBuffers, yDelta.magnitude + SHELL_RADIUS);
+        foreach (var hitBuffer in yHitBuffers)
+        {
+            // ヒットしたオブジェクトからの法線ベクトルを求める
+            // 画面左下が (0, 0) という座標系になっているため、以下のようになる
+            // 地面にぶつかると (0,  1)
+            // 天井にぶつかると (0, -1)
+            var normal = hitBuffer.normal;
+            if (normal.y > 0)
+            {
+                deltaPosition.y = Mathf.Max(deltaPosition.y, -hitBuffer.distance + SHELL_RADIUS);
+            }
+            else if (normal.y < 0)
+            {
+                deltaPosition.y = Mathf.Min(deltaPosition.y, hitBuffer.distance - SHELL_RADIUS);
             }
         }
 
