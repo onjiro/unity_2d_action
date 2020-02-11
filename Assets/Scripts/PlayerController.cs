@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 targetVelocity;
     private ContactFilter2D contactFilter;
     private bool controllable = true;
+    private List<ActionTrigger> actionTriggers = new List<ActionTrigger>();
 
     // Start is called before the first frame update
     void Awake()
@@ -50,7 +51,7 @@ public class PlayerController : MonoBehaviour
         // ジャンプ
         if (Input.GetButtonDown("Jump"))
         {
-            this.targetVelocity.y = this.jumpInitialSpeed;
+            this.actionTriggers.Add(ActionTrigger.Jump);
         }
     }
 
@@ -64,6 +65,17 @@ public class PlayerController : MonoBehaviour
         this.grounding = IsGrounding(this.rb2d);
         if (this.controllable)
         {
+            foreach (var trigger in this.actionTriggers)
+            {
+                switch (trigger)
+                {
+                    case ActionTrigger.Jump:
+                        this.targetVelocity.y = this.jumpInitialSpeed;
+                        break;
+                }
+            }
+            this.actionTriggers.Clear();
+
             this.velocity = CalculateVelocity(this.velocity, this.targetVelocity, this.grounding);
         }
         else
@@ -162,5 +174,10 @@ public class PlayerController : MonoBehaviour
         deltaPosition.y += fractionY;
 
         return currentPosition + deltaPosition;
+    }
+
+    public enum ActionTrigger
+    {
+        Jump
     }
 }
