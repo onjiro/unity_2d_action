@@ -5,6 +5,8 @@ using System.Linq;
 
 public class PlayerController : MonoBehaviour
 {
+    // 設置しているとみなす距離
+    private const float GROUNDING_DISTANCE = 0.04f;
     // 物体の接触時に開けておく距離
     private const float SHELL_RADIUS = 0.01f;
     // 重力による終端速度
@@ -94,7 +96,7 @@ public class PlayerController : MonoBehaviour
     private bool IsGrounding(Rigidbody2D rb2d)
     {
         var hitBuffers = new List<RaycastHit2D>();
-        rb2d.Cast(new Vector2(0, -SHELL_RADIUS), this.contactFilter, hitBuffers, SHELL_RADIUS);
+        rb2d.Cast(new Vector2(0, -GROUNDING_DISTANCE), this.contactFilter, hitBuffers, GROUNDING_DISTANCE);
 
         // 下方向にヒットした物体の法線ベクトルが (0, 1) となっているものがあれば設置しているとみなせる
         return hitBuffers.Where(buffer => buffer.normal.y > 0).Count() > 0;
@@ -105,9 +107,9 @@ public class PlayerController : MonoBehaviour
     {
         Vector2 velocity = new Vector2(targetVelocity.x, targetVelocity.y);
         // 接地していて下方向への速度が生じていればリセットする
-        if (grounding && velocity.y < 0)
+        if (grounding && velocity.y <= 0)
         {
-            velocity.y = 0;
+            velocity.y = -2f;
         }
         // 接地していなければ下方向に加速させる
         else if (!grounding)
@@ -140,16 +142,24 @@ public class PlayerController : MonoBehaviour
             // 左側の壁にぶつかると  (1, 0)
             // 右側の壁にぶつかると (-1, 0)
             var normal = hitBuffer.normal;
-            deltaPosition.x = deltaPosition.x * (normal.y / normal.magnitude);
-            fractionY = deltaPosition.x * Mathf.Abs(normal.x / normal.magnitude);
-            if (normal.x > 0.5)
+            if (Mathf.Abs(normal.x) > 0.5)
             {
-                deltaPosition.x = Mathf.Max(deltaPosition.x, -hitBuffer.distance + SHELL_RADIUS);
+                fractionY = 0;
+                if (normal.x > 0f)
+                {
+                    deltaPosition.x = Mathf.Max(deltaPosition.x, -hitBuffer.distance + SHELL_RADIUS);
+                }
+                else
+                {
+                    deltaPosition.x = Mathf.Min(deltaPosition.x, hitBuffer.distance - SHELL_RADIUS);
+                }
             }
-            else if (normal.x < -0.5)
+            else
             {
-                deltaPosition.x = Mathf.Min(deltaPosition.x, hitBuffer.distance - SHELL_RADIUS);
+                deltaPosition.x = deltaPosition.x * (normal.y / normal.magnitude);
+                fractionY = deltaPosition.x * Mathf.Abs(normal.x / normal.magnitude);
             }
+
         }
 
         var yHitBuffers = new List<RaycastHit2D>();
