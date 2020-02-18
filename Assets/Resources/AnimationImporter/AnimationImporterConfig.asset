@@ -14,18 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _animationNamesThatDoNotLoop:
   - death
-  _automaticImporting: 0
+  _automaticImporting: 1
   _spritePixelsPerUnit: 100
   _targetObjectType: 0
   _spriteAlignment: 7
   _spriteAlignmentCustomX: 0
   _spriteAlignmentCustomY: 0
   _spritesTargetLocation:
-    _locationType: 1
-    _globalDirectory: Assets
-  _animationsTargetLocation:
-    _locationType: 1
-    _globalDirectory: Assets
-  _animationControllersTargetLocation:
     _locationType: 0
     _globalDirectory: Assets
+  _animationsTargetLocation:
+    _locationType: 2
+    _globalDirectory: Assets/Animations
+  _animationControllersTargetLocation:
+    _locationType: 2
+    _globalDirectory: Assets/Animations
