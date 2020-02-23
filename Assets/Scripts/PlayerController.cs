@@ -13,6 +13,8 @@ public class PlayerController : MonoBehaviour
     private const float GRAVITY_TERMINAL_VELOCITY = -8f;
     public float maxSpeed;
     public float jumpInitialSpeed;
+    // ショットオブジェクト
+    public GameObject bullet;
     private SpriteRenderer spriteRenderer;
     private Rigidbody2D rb2d;
     private bool grounding;
@@ -55,6 +57,12 @@ public class PlayerController : MonoBehaviour
         {
             this.actionTriggers.Add(ActionTrigger.Jump);
         }
+
+        // アタック
+        if (Input.GetButtonDown("Attack"))
+        {
+            this.actionTriggers.Add(ActionTrigger.Attack);
+        }
     }
 
     // FixedUpdate is called on Physics Cycle, called some times on frame
@@ -73,6 +81,21 @@ public class PlayerController : MonoBehaviour
                 {
                     case ActionTrigger.Jump:
                         this.targetVelocity.y = this.jumpInitialSpeed;
+                        break;
+                    case ActionTrigger.Attack:
+                        animator.SetTrigger("attacking");
+                        var bullet = (GameObject)Instantiate(this.bullet, this.rb2d.position, this.transform.rotation);
+                        var controller = bullet.GetComponent<BulletController>();
+                        var bulletRb2d = bullet.GetComponent<Rigidbody2D>();
+                        if (this.spriteRenderer.flipX)
+                        {
+                            bulletRb2d.position += this.bullet.GetComponent<Rigidbody2D>().position * new Vector2(-1, 1);
+                            controller.speed *= -1;
+                        }
+                        else
+                        {
+                            bulletRb2d.position += this.bullet.GetComponent<Rigidbody2D>().position;
+                        }
                         break;
                 }
             }
@@ -188,6 +211,7 @@ public class PlayerController : MonoBehaviour
 
     public enum ActionTrigger
     {
-        Jump
+        Jump,
+        Attack
     }
 }
