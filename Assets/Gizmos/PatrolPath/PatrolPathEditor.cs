@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(PatrolPath))]
@@ -33,3 +34,4 @@ public class PatrolPathGizmo : Editor
         Handles.DrawSolidDisc(end, path.transform.forward, 0.1f);
     }
 }
+#endif
