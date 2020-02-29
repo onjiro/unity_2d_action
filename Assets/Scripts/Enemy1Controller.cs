@@ -23,11 +23,14 @@ public class Enemy1Controller : MonoBehaviour
     {
         var rb2d = this.GetComponent<Rigidbody2D>();
 
-        if ((this.targetVelocity.x > 0 && rb2d.position.x >= this.path.EndPositionInGlobal().x)
-            || (this.targetVelocity.x < 0 && rb2d.position.x < this.path.StartPositionInGlobal().x))
+        if (this.path)
         {
-            this.targetVelocity = Vector2.zero;
-            StartCoroutine(flipAndGoAfter(1f, rb2d));
+            if ((this.targetVelocity.x > 0 && rb2d.position.x >= this.path.EndPositionInGlobal().x)
+                || (this.targetVelocity.x < 0 && rb2d.position.x < this.path.StartPositionInGlobal().x))
+            {
+                this.targetVelocity = Vector2.zero;
+                StartCoroutine(flipAndGoAfter(1f, rb2d));
+            }
         }
     }
 

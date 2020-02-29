@@ -5,6 +5,9 @@ TextureImporter:
   - first:
       213: 8793639957104055765
     second: idle_0
+  - first:
+      213: -8092295105046505211
+    second: explosion_0
   externalObjects: {}
   serializedVersion: 10
   mipmaps:
@@ -63,7 +66,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 64
+    maxTextureSize: 128
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 0
@@ -93,6 +96,27 @@ TextureImporter:
       bones: []
       spriteID: 5d55ed543f8490a70800000000000000
       internalID: 8793639957104055765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: explosion_0
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 509121e0a7462bf80800000000000000
+      internalID: -8092295105046505211
       vertices: []
       indices: 
       edges: []
