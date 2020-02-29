@@ -14,8 +14,11 @@ public class Enemy1Controller : MonoBehaviour
     {
         this.kinematic = new KinematicStrategy(gameObject);
 
-        this.targetVelocity = Vector2.right * 2;
-        GetComponent<SpriteRenderer>().flipX = false;
+        if (this.path)
+        {
+            this.targetVelocity = Vector2.right * 2;
+            GetComponent<SpriteRenderer>().flipX = false;
+        }
     }
 
     // Update is called once per frame

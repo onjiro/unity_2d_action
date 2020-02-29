@@ -35,12 +35,12 @@ public class BulletController : MonoBehaviour
         switch (other.tag)
         {
             case "Enemy":
-                Instantiate(this.landingEffect, this.rb2d.position + new Vector2(this.speed, 0) * Time.deltaTime, this.transform.rotation);
+                Instantiate(this.landingEffect, this.transform.position + new Vector3(this.speed, 0, 0) * Time.deltaTime, this.transform.rotation);
                 Destroy(gameObject);
                 other.GetComponent<HittableEnemy>()?.Hit(this.GetComponent<PlayerAttack>());
                 break;
             case "Land":
-                Instantiate(this.landingEffect, this.rb2d.position + new Vector2(this.speed, 0) * Time.deltaTime, this.transform.rotation);
+                Instantiate(this.landingEffect, this.transform.position + new Vector3(this.speed, 0, 0) * Time.deltaTime, this.transform.rotation);
                 Destroy(gameObject);
                 break;
         }

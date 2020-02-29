@@ -188,6 +188,9 @@ TextureImporter:
   - first:
       213: -4998125277122183845
     second: jump_attack_1
+  - first:
+      213: 3865779245405396931
+    second: damaged_0
   externalObjects: {}
   serializedVersion: 10
   mipmaps:
@@ -711,6 +714,27 @@ TextureImporter:
       bones: []
       spriteID: b5d3b3aaa8713aab0800000000000000
       internalID: -4998125277122183845
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: damaged_0
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3cf577eedb106a530800000000000000
+      internalID: 3865779245405396931
       vertices: []
       indices: 
       edges: []

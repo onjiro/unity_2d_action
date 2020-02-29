@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     public float jumpInitialSpeed;
     // ショットオブジェクト
     public GameObject bullet;
+    public GameObject deadEffect;
     private SpriteRenderer spriteRenderer;
     private Rigidbody2D rb2d;
     private bool grounding;
@@ -18,7 +19,6 @@ public class PlayerController : MonoBehaviour
     // Kinematicオブジェクトの動作
     private KinematicStrategy kinematic;
 
-    // Start is called before the first frame update
     void Awake()
     {
         this.kinematic = new KinematicStrategy(gameObject);
@@ -32,25 +32,38 @@ public class PlayerController : MonoBehaviour
         // y方向の速度は特に何もなければ現在の速度を維持
         this.targetVelocity.y = this.rb2d.velocity.y;
 
-        // 横方向の入力
-        var inputX = Input.GetAxis("Horizontal");
-        if (inputX != 0)
+        this.controllable = !this.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsTag("wait");
+        if (this.controllable)
         {
-            this.spriteRenderer.flipX = (inputX < 0);
-        }
-        this.targetVelocity.x = inputX * this.maxSpeed;
+            // 横方向の入力
+            var inputX = Input.GetAxis("Horizontal");
+            if (inputX != 0)
+            {
+                this.spriteRenderer.flipX = (inputX < 0);
+            }
+            this.targetVelocity.x = inputX * this.maxSpeed;
 
-        // ジャンプ
-        if (Input.GetButtonDown("Jump"))
-        {
-            this.actionTriggers.Add(ActionTrigger.Jump);
-        }
+            // ジャンプ
+            if (Input.GetButtonDown("Jump") && this.grounding)
+            {
+                this.actionTriggers.Add(ActionTrigger.Jump);
+            }
 
-        // アタック
-        if (Input.GetButtonDown("Attack"))
-        {
-            this.actionTriggers.Add(ActionTrigger.Attack);
+            // アタック
+            if (Input.GetButtonDown("Attack"))
+            {
+                this.actionTriggers.Add(ActionTrigger.Attack);
+            }
         }
+        else
+        {
+            this.targetVelocity.x = this.rb2d.velocity.x;
+        }
+    }
+
+    public void AddActionTrigger(ActionTrigger trigger)
+    {
+        this.actionTriggers.Add(trigger);
     }
 
     // FixedUpdate is called on Physics Cycle, called some times on frame
@@ -63,38 +76,18 @@ public class PlayerController : MonoBehaviour
         this.grounding = this.kinematic.IsGrounding();
         if (this.controllable)
         {
-            foreach (var trigger in this.actionTriggers)
-            {
-                switch (trigger)
-                {
-                    case ActionTrigger.Jump:
-                        this.targetVelocity.y = this.jumpInitialSpeed;
-                        break;
-                    case ActionTrigger.Attack:
-                        animator.SetTrigger("attacking");
-                        var bullet = (GameObject)Instantiate(this.bullet, this.rb2d.position, this.transform.rotation);
-                        var controller = bullet.GetComponent<BulletController>();
-                        var bulletRb2d = bullet.GetComponent<Rigidbody2D>();
-                        if (this.spriteRenderer.flipX)
-                        {
-                            bulletRb2d.position += this.bullet.GetComponent<Rigidbody2D>().position * new Vector2(-1, 1);
-                            controller.speed *= -1;
-                        }
-                        else
-                        {
-                            bulletRb2d.position += this.bullet.GetComponent<Rigidbody2D>().position;
-                        }
-                        break;
-                }
-            }
-            this.actionTriggers.Clear();
-
-            this.rb2d.velocity = this.kinematic.CalculateVelocity(this.rb2d.velocity, this.targetVelocity, this.grounding);
+            this.actionTriggers.ForEach(HandleActionTrigger);
         }
         else
         {
-            this.rb2d.velocity = this.kinematic.CalculateVelocity(this.rb2d.velocity, Vector2.zero, this.grounding);
+            if (this.grounding)
+            {
+                this.targetVelocity.x = 0;
+            }
         }
+        this.actionTriggers.Clear();
+
+        this.rb2d.velocity = this.kinematic.CalculateVelocity(this.rb2d.velocity, this.targetVelocity, this.grounding);
         this.rb2d.MovePosition(this.kinematic.CalculatePosition(this.rb2d.velocity));
 
         // アニメーションの変更
@@ -103,9 +96,46 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("grounding", this.grounding);
     }
 
+    private void HandleActionTrigger(ActionTrigger trigger)
+    {
+        switch (trigger)
+        {
+            case ActionTrigger.Jump:
+                this.targetVelocity.y = this.jumpInitialSpeed;
+                break;
+            case ActionTrigger.Attack:
+                this.GetComponent<Animator>().SetTrigger("attacking");
+                var bullet = (GameObject)Instantiate(this.bullet, this.rb2d.position, this.transform.rotation);
+                var controller = bullet.GetComponent<BulletController>();
+                var bulletRb2d = bullet.GetComponent<Rigidbody2D>();
+                if (this.spriteRenderer.flipX)
+                {
+                    bulletRb2d.position += this.bullet.GetComponent<Rigidbody2D>().position * new Vector2(-1, 1);
+                    controller.speed *= -1;
+                }
+                else
+                {
+                    bulletRb2d.position += this.bullet.GetComponent<Rigidbody2D>().position;
+                }
+                break;
+            case ActionTrigger.Damaged:
+                this.targetVelocity.x = (this.spriteRenderer.flipX) ? 2 : -2;
+                this.targetVelocity.y = 1.8f;
+                this.GetComponent<Animator>().SetTrigger("damaged");
+                break;
+            case ActionTrigger.Dead:
+                Instantiate(this.deadEffect, this.transform.position, this.transform.rotation);
+                GameManager.Instance.PlayerDead();
+                Destroy(this.gameObject);
+                break;
+        }
+    }
+
     public enum ActionTrigger
     {
         Jump,
-        Attack
+        Attack,
+        Damaged,
+        Dead,
     }
 }

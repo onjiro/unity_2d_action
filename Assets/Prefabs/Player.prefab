@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2449136690173254047}
   - component: {fileID: 2449136690173254044}
   - component: {fileID: 5045570715838293181}
+  - component: {fileID: 989278305143983546}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -29,7 +30,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2449136690173254045}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.31, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -53,7 +54,7 @@ BoxCollider2D:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 0.75, y: 0.75}
-    newSize: {x: 0.75, y: 0.75}
+    newSize: {x: 0.48, y: 0.48}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
@@ -78,10 +79,10 @@ Rigidbody2D:
   m_AngularDrag: 0.05
   m_GravityScale: 1
   m_Material: {fileID: 0}
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 0
   m_CollisionDetection: 1
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!212 &2449136690173254047
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -127,7 +128,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.75, y: 0.75}
+  m_Size: {x: 0.48, y: 0.48}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -164,6 +165,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eba84f80191214c9ba8e71e24c14b2bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 5
-  jumpInitialSpeed: 5
-  bullet: {fileID: 0}
+  maxSpeed: 4
+  jumpInitialSpeed: 4.5
+  bullet: {fileID: 694994245100828076, guid: 0e2aa3fedf16c4ccda0e097d981c68f0, type: 3}
+  deadEffect: {fileID: 7442734147029776471, guid: 1ae9b9a2fa3bc48158a4eb581150b779,
+    type: 3}
+--- !u!114 &989278305143983546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2449136690173254045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3bdc9485f1fe4242971c5d866be136d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hp: 5
+  destroyEffect: {fileID: 0}

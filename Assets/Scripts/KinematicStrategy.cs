@@ -17,9 +17,9 @@ public class KinematicStrategy
     {
         this.rb2d = gameObject.GetComponent<Rigidbody2D>();
 
-        // 当たり判定の対象のフィルタ。レイヤーが同じものだけを対象にする
+        // 移動時の当たり判定の対象のフィルタ。壁のレイヤーだけを対象にする
         this.contactFilter.useTriggers = false;
-        this.contactFilter.SetLayerMask(Physics2D.GetLayerCollisionMask(gameObject.layer));
+        this.contactFilter.SetLayerMask(LayerMask.GetMask("Wall"));
         this.contactFilter.useLayerMask = true;
     }
 
@@ -45,7 +45,7 @@ public class KinematicStrategy
         // 接地していなければ下方向に加速させる
         else if (!grounding)
         {
-            velocity.y = Mathf.Max((velocity + Physics2D.gravity * Time.deltaTime).y, GRAVITY_TERMINAL_VELOCITY);
+            velocity.y = Mathf.Max((currentVelocity + Physics2D.gravity * Time.deltaTime).y, GRAVITY_TERMINAL_VELOCITY);
         }
 
         return velocity;
