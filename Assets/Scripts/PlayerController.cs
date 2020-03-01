@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -76,7 +77,7 @@ public class PlayerController : MonoBehaviour
         this.grounding = this.kinematic.IsGrounding();
         if (this.controllable)
         {
-            this.actionTriggers.ForEach(HandleActionTrigger);
+            this.actionTriggers.Distinct().ToList().ForEach(HandleActionTrigger);
         }
         else
         {
@@ -122,6 +123,7 @@ public class PlayerController : MonoBehaviour
                 this.targetVelocity.x = (this.spriteRenderer.flipX) ? 2 : -2;
                 this.targetVelocity.y = 1.8f;
                 this.GetComponent<Animator>().SetTrigger("damaged");
+                StartCoroutine(this.blink(0.5f));
                 break;
             case ActionTrigger.Dead:
                 Instantiate(this.deadEffect, this.transform.position, this.transform.rotation);
@@ -129,6 +131,15 @@ public class PlayerController : MonoBehaviour
                 Destroy(this.gameObject);
                 break;
         }
+    }
+
+    private IEnumerator blink(float seconds)
+    {
+        this.gameObject.GetComponent<HittablePlayer>().enable = false;
+        this.gameObject.AddComponent<BlinkSprite>();
+        yield return new WaitForSeconds(seconds);
+        Destroy(this.gameObject.GetComponent<BlinkSprite>());
+        this.gameObject.GetComponent<HittablePlayer>().enable = true;
     }
 
     public enum ActionTrigger
