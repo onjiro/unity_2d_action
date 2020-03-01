@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eba84f80191214c9ba8e71e24c14b2bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 4
+  maxSpeed: 3
   jumpInitialSpeed: 4.5
   bullet: {fileID: 694994245100828076, guid: 0e2aa3fedf16c4ccda0e097d981c68f0, type: 3}
   deadEffect: {fileID: 7442734147029776471, guid: 1ae9b9a2fa3bc48158a4eb581150b779,
@@ -183,4 +183,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hp: 5
+  enable: 1
   destroyEffect: {fileID: 0}
