@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController Instance { get; private set; }
+
     public float maxSpeed;
     public float jumpInitialSpeed;
     // ショットオブジェクト
@@ -19,8 +21,17 @@ public class PlayerController : MonoBehaviour
     private List<ActionTrigger> actionTriggers = new List<ActionTrigger>();
     // Kinematicオブジェクトの動作
     private KinematicStrategy kinematic;
+    void OnEnable()
+    {
+        Instance = this;
+    }
 
-    void Awake()
+    void OnDisable()
+    {
+        if (Instance == this) Instance = null;
+    }
+
+    private void Awake()
     {
         this.kinematic = new KinematicStrategy(gameObject);
         this.spriteRenderer = this.GetComponent<SpriteRenderer>();

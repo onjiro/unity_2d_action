@@ -1,48 +1,101 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
 
 public class Enemy1Controller : MonoBehaviour
 {
     public PatrolPath path;
+    public float initialJumpSpeed;
     private KinematicStrategy kinematic;
     private Vector2 targetVelocity = Vector2.zero;
 
     // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         this.kinematic = new KinematicStrategy(gameObject);
 
         if (this.path)
         {
-            this.targetVelocity = Vector2.right * 2;
-            GetComponent<SpriteRenderer>().flipX = false;
+            StartCoroutine(this.CoroutinePatrol());
+        }
+        else
+        {
+            StartCoroutine(this.CoroutineWaitAndJump());
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    private IEnumerator CoroutinePatrol()
     {
         var rb2d = this.GetComponent<Rigidbody2D>();
+        var spriteRenderer = this.GetComponent<SpriteRenderer>();
 
-        if (this.path)
+        // go left first
+
+        while (true)
         {
-            if ((this.targetVelocity.x > 0 && rb2d.position.x >= this.path.EndPositionInGlobal().x)
-                || (this.targetVelocity.x < 0 && rb2d.position.x < this.path.StartPositionInGlobal().x))
+            // accel left
+            spriteRenderer.flipX = true;
+            foreach (var acceleration in new[] { 0.5f, 0.5f, 0.5f, 0.5f })
             {
-                this.targetVelocity = Vector2.zero;
-                StartCoroutine(flipAndGoAfter(1f, rb2d));
+                this.targetVelocity.x -= acceleration;
+                yield return null;
             }
+
+            // patrol left
+            while (rb2d.position.x > this.path.StartPositionInGlobal().x)
+            {
+                yield return null;
+            }
+
+            // wait
+            this.targetVelocity.x = 0;
+            yield return new WaitForSeconds(2f);
+
+            // accel right
+            spriteRenderer.flipX = false;
+            foreach (var acceleration in new[] { 0.5f, 0.5f, 0.5f, 0.5f })
+            {
+                this.targetVelocity.x += acceleration;
+                yield return null;
+            }
+
+            // patrol right
+            while (rb2d.position.x <= this.path.EndPositionInGlobal().x)
+            {
+                yield return null;
+            }
+
+            // wait
+            this.targetVelocity.x = 0;
+            yield return new WaitForSeconds(2f);
         }
     }
 
-    private IEnumerator flipAndGoAfter(float seconds, Rigidbody2D rb2d)
+    private IEnumerator CoroutineWaitAndJump()
     {
-        yield return new WaitForSeconds(seconds);
-        var spriteRenderer = this.GetComponent<SpriteRenderer>();
-        this.targetVelocity = spriteRenderer.flipX ? Vector2.right * 2 : Vector2.left * 2;
-        spriteRenderer.flipX = !spriteRenderer.flipX;
+        while (true)
+        {
+            // wait
+            for (int i = 0; i < 5; i++)
+            {
+                this.TurnToPlayerDirection();
+                yield return new WaitForSeconds(1f);
+            }
+
+            // jump
+            this.targetVelocity.y = this.initialJumpSpeed;
+            yield return new WaitForSeconds(0.5f);
+            this.TurnToPlayerDirection();
+            this.targetVelocity.y = 0f;
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
+    private void TurnToPlayerDirection()
+    {
+        var player = PlayerController.Instance?.gameObject;
+        if (!player) return;
+
+        this.GetComponent<SpriteRenderer>().flipX = (this.transform.position.x > player.transform.position.x);
     }
 
     private void FixedUpdate()
