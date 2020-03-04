@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(Collider2D), typeof(PlayerController))]
 public class HittablePlayer : MonoBehaviour
@@ -19,11 +20,21 @@ public class HittablePlayer : MonoBehaviour
             if (hp > 0)
             {
                 this.GetComponent<PlayerController>().AddActionTrigger(PlayerController.ActionTrigger.Damaged);
+                StartCoroutine(CoroutineBlink());
             }
             else
             {
                 this.GetComponent<PlayerController>().AddActionTrigger(PlayerController.ActionTrigger.Dead);
             }
         }
+    }
+
+    private IEnumerator CoroutineBlink()
+    {
+        this.enable = false;
+        this.gameObject.AddComponent<BlinkSprite>();
+        yield return new WaitForSeconds(1f);
+        Destroy(this.gameObject.GetComponent<BlinkSprite>());
+        this.enable = true;
     }
 }
