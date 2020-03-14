@@ -1,12 +1,14 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy1Controller : MonoBehaviour
+public class Enemy1Controller : MonoBehaviour, EnemyControllerInterface
 {
     public PatrolPath path;
     public float initialJumpSpeed;
     private KinematicStrategy kinematic;
     private Vector2 targetVelocity = Vector2.zero;
+    private List<ActionTrigger> actionTriggers = new List<ActionTrigger>();
 
     // Start is called before the first frame update
     private void Awake()
@@ -104,5 +106,10 @@ public class Enemy1Controller : MonoBehaviour
         var grounding = this.kinematic.IsGrounding();
         rb2d.velocity = this.kinematic.CalculateVelocity(rb2d.velocity, this.targetVelocity, grounding);
         rb2d.MovePosition(this.kinematic.CalculatePosition(rb2d.velocity));
+    }
+
+    public void AddActionTrigger(ActionTrigger trigger)
+    {
+        this.actionTriggers.Add(trigger);
     }
 }
