@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[RequireComponent(typeof(KinematicBody))]
 public class Boss1Controller : MonoBehaviour, EnemyControllerInterface
 {
     public float moveSpeed = 1.2f;
     public float initialJumpSpeed = 8f;
-    private KinematicStrategy kinematic;
-    private Vector2 targetVelocity = Vector2.zero;
+    public GameObject upperBullet;
+    private KinematicBody kinematic;
     private bool grounding = true;
     private List<ActionTrigger> actionTriggers = new List<ActionTrigger>();
     private IEnumerator interruptPattern = new ArrayList().GetEnumerator();
@@ -16,8 +17,7 @@ public class Boss1Controller : MonoBehaviour, EnemyControllerInterface
     // Start is called before the first frame update
     private void Awake()
     {
-        this.kinematic = new KinematicStrategy(gameObject);
-
+        this.kinematic = GetComponent<KinematicBody>();
         StartCoroutine(this.Routine());
     }
 
@@ -35,7 +35,8 @@ public class Boss1Controller : MonoBehaviour, EnemyControllerInterface
                 yield return interruptPattern.Current;
             }
 
-            if (hittableEnemy.currentHp >= hittableEnemy.maxHp / 2)
+            if (false)
+            // if (hittableEnemy.currentHp >= hittableEnemy.maxHp / 2)
             {
                 pattern1.MoveNext();
                 yield return pattern1.Current;
@@ -72,26 +73,26 @@ public class Boss1Controller : MonoBehaviour, EnemyControllerInterface
             for (int j = 0; j < 2; j++)
             {
                 this.TurnToPlayerDirection();
-                this.targetVelocity.x = spriteRenderer.flipX ? -this.moveSpeed * 0.5f : this.moveSpeed * 0.5f;
-                for (int i = 0; i < 120; i++)
+                this.kinematic.targetVelocity.x = spriteRenderer.flipX ? -this.moveSpeed * 0.5f : this.moveSpeed * 0.5f;
+                for (int i = 0; i < 90; i++)
                 {
                     yield return null;
                 }
                 for (int i = 0; i < 60; i++)
                 {
-                    this.targetVelocity.x = this.targetVelocity.x * 0.7f;
+                    this.kinematic.targetVelocity.x = this.kinematic.targetVelocity.x * 0.7f;
                     yield return null;
                 }
-                this.targetVelocity.x = 0f;
+                this.kinematic.targetVelocity.x = 0f;
                 yield return new WaitForSeconds(1f);
             }
 
             // jump
             this.TurnToPlayerDirection();
-            this.targetVelocity.x = spriteRenderer.flipX ? -this.moveSpeed : this.moveSpeed;
-            this.targetVelocity.y = this.initialJumpSpeed;
+            this.kinematic.targetVelocity.x = spriteRenderer.flipX ? -this.moveSpeed : this.moveSpeed;
+            this.kinematic.targetVelocity.y = this.initialJumpSpeed;
             yield return new WaitForSeconds(0.1f);
-            this.targetVelocity.y = 0f;
+            this.kinematic.targetVelocity.y = 0f;
 
             // wait for grounding
             while (!this.grounding)
@@ -99,8 +100,8 @@ public class Boss1Controller : MonoBehaviour, EnemyControllerInterface
                 yield return null;
             }
             this.TurnToPlayerDirection();
-            this.targetVelocity.x = 0f;
-            this.targetVelocity.y = 0f;
+            this.kinematic.targetVelocity.x = 0f;
+            this.kinematic.targetVelocity.y = 0f;
             yield return new WaitForSeconds(0.2f);
         }
     }
@@ -111,14 +112,16 @@ public class Boss1Controller : MonoBehaviour, EnemyControllerInterface
     // ・ジャンプ
     private IEnumerator Pattern2()
     {
+        var spriteRenderer = this.GetComponent<SpriteRenderer>();
+
         while (true)
         {
-            // jump
+            // back jump
             this.TurnToPlayerDirection();
-            this.targetVelocity.x = this.GetComponent<SpriteRenderer>().flipX ? -this.moveSpeed : this.moveSpeed;
-            this.targetVelocity.y = this.initialJumpSpeed;
+            this.kinematic.targetVelocity.x = this.GetComponent<SpriteRenderer>().flipX ? this.moveSpeed : -this.moveSpeed;
+            this.kinematic.targetVelocity.y = this.initialJumpSpeed;
             yield return new WaitForSeconds(0.1f);
-            this.targetVelocity.y = 0f;
+            this.kinematic.targetVelocity.y = 0f;
 
             // wait for grounding
             while (!this.grounding)
@@ -126,9 +129,50 @@ public class Boss1Controller : MonoBehaviour, EnemyControllerInterface
                 yield return null;
             }
             this.TurnToPlayerDirection();
-            this.targetVelocity.x = 0f;
-            this.targetVelocity.y = 0f;
+            this.kinematic.targetVelocity.x = 0f;
+            this.kinematic.targetVelocity.y = 0f;
             yield return new WaitForSeconds(0.2f);
+
+            // charge
+            this.GetComponent<Animator>().SetTrigger("charge");
+            for (int i = 0; i < 180; i++)
+            {
+                var size = Random.Range(0.95f, 1.00f);
+                gameObject.transform.localScale = new Vector3(size, size, 1f);
+                yield return null;
+                yield return null;
+                yield return null;
+            }
+            gameObject.transform.localScale = Vector3.one;
+            yield return new WaitForSeconds(0.5f);
+
+            // upper
+            this.GetComponent<Animator>().SetTrigger("upper");
+            var bulletDirection = this.GetComponent<SpriteRenderer>().flipX ? -1f : 1f;
+
+            Instantiate(this.upperBullet, transform.TransformPoint(new Vector2(bulletDirection * 2f, -2f)), transform.rotation);
+            for (int i = 0; i < 60; i++)
+            {
+                yield return null;
+            }
+            Instantiate(this.upperBullet, transform.TransformPoint(new Vector2(bulletDirection * 4f, -2f)), transform.rotation);
+            for (int i = 0; i < 60; i++)
+            {
+                yield return null;
+            }
+            Instantiate(this.upperBullet, transform.TransformPoint(new Vector2(bulletDirection * 6f, -2f)), transform.rotation);
+            for (int i = 0; i < 60; i++)
+            {
+                yield return null;
+            }
+            yield return new WaitForSeconds(1f);
+
+            // dash
+            this.TurnToPlayerDirection();
+            this.kinematic.targetVelocity.x = spriteRenderer.flipX ? -this.moveSpeed * 1.5f : this.moveSpeed * 1.5f;
+            yield return new WaitForSeconds(1f);
+            this.kinematic.targetVelocity.x = 0f;
+            yield return new WaitForSeconds(1f);
         }
     }
 
@@ -137,13 +181,14 @@ public class Boss1Controller : MonoBehaviour, EnemyControllerInterface
         this.GetComponent<Animator>().SetTrigger("damaged");
 
         var spriteRenderer = this.GetComponent<SpriteRenderer>();
-        this.targetVelocity.x = spriteRenderer.flipX ? this.moveSpeed * 0.2f : -this.moveSpeed * 0.2f;
-        for (int i = 0; i < 120; i++)
+        this.kinematic.targetVelocity.x = spriteRenderer.flipX ? this.moveSpeed * 0.3f : -this.moveSpeed * 0.3f;
+        for (int i = 0; i < 90; i++)
         {
+            this.kinematic.targetVelocity.x *= 0.9f;
             yield return null;
         }
-        this.targetVelocity.x = 0f;
-        yield return new WaitForSeconds(0.5f);
+        this.kinematic.targetVelocity.x = 0f;
+        yield return new WaitForSeconds(0.3f);
     }
 
     private void TurnToPlayerDirection()
@@ -161,9 +206,6 @@ public class Boss1Controller : MonoBehaviour, EnemyControllerInterface
 
         this.actionTriggers.Distinct().ToList().ForEach(HandleActionTrigger);
         this.actionTriggers.Clear();
-
-        rb2d.velocity = this.kinematic.CalculateVelocity(rb2d.velocity, this.targetVelocity, grounding);
-        rb2d.MovePosition(this.kinematic.CalculatePosition(rb2d.velocity));
 
         // Animation
         var animator = this.GetComponent<Animator>();

@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(KinematicBody))]
 public class Enemy1Controller : MonoBehaviour, EnemyControllerInterface
 {
     public PatrolPath path;
     public float initialJumpSpeed;
-    private KinematicStrategy kinematic;
-    private Vector2 targetVelocity = Vector2.zero;
+    private KinematicBody kinematic;
     private List<ActionTrigger> actionTriggers = new List<ActionTrigger>();
 
     // Start is called before the first frame update
     private void Awake()
     {
-        this.kinematic = new KinematicStrategy(gameObject);
+        this.kinematic = GetComponent<KinematicBody>();
 
         if (this.path)
         {
@@ -38,7 +38,7 @@ public class Enemy1Controller : MonoBehaviour, EnemyControllerInterface
             spriteRenderer.flipX = true;
             foreach (var acceleration in new[] { 0.5f, 0.5f, 0.5f, 0.5f })
             {
-                this.targetVelocity.x -= acceleration;
+                this.kinematic.targetVelocity.x -= acceleration;
                 yield return null;
             }
 
@@ -49,14 +49,14 @@ public class Enemy1Controller : MonoBehaviour, EnemyControllerInterface
             }
 
             // wait
-            this.targetVelocity.x = 0;
+            this.kinematic.targetVelocity.x = 0;
             yield return new WaitForSeconds(2f);
 
             // accel right
             spriteRenderer.flipX = false;
             foreach (var acceleration in new[] { 0.5f, 0.5f, 0.5f, 0.5f })
             {
-                this.targetVelocity.x += acceleration;
+                this.kinematic.targetVelocity.x += acceleration;
                 yield return null;
             }
 
@@ -67,7 +67,7 @@ public class Enemy1Controller : MonoBehaviour, EnemyControllerInterface
             }
 
             // wait
-            this.targetVelocity.x = 0;
+            this.kinematic.targetVelocity.x = 0;
             yield return new WaitForSeconds(2f);
         }
     }
@@ -84,10 +84,10 @@ public class Enemy1Controller : MonoBehaviour, EnemyControllerInterface
             }
 
             // jump
-            this.targetVelocity.y = this.initialJumpSpeed;
+            this.kinematic.targetVelocity.y = this.initialJumpSpeed;
             yield return new WaitForSeconds(0.5f);
             this.TurnToPlayerDirection();
-            this.targetVelocity.y = 0f;
+            this.kinematic.targetVelocity.y = 0f;
             yield return new WaitForSeconds(0.5f);
         }
     }
@@ -104,8 +104,6 @@ public class Enemy1Controller : MonoBehaviour, EnemyControllerInterface
     {
         var rb2d = this.GetComponent<Rigidbody2D>();
         var grounding = this.kinematic.IsGrounding();
-        rb2d.velocity = this.kinematic.CalculateVelocity(rb2d.velocity, this.targetVelocity, grounding);
-        rb2d.MovePosition(this.kinematic.CalculatePosition(rb2d.velocity));
     }
 
     public void AddActionTrigger(ActionTrigger trigger)

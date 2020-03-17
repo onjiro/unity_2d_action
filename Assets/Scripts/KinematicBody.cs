@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class KinematicStrategy
+[RequireComponent(typeof(Rigidbody2D))]
+public class KinematicBody : MonoBehaviour
 {
     // 設置しているとみなす距離
     public const float GROUNDING_DISTANCE = 0.04f;
@@ -10,10 +11,11 @@ public class KinematicStrategy
     private const float SHELL_RADIUS = 0.01f;
     // 重力による終端速度
     private const float GRAVITY_TERMINAL_VELOCITY = -8f;
+    public Vector2 targetVelocity = Vector2.zero;
     private Rigidbody2D rb2d;
     private ContactFilter2D contactFilter;
 
-    public KinematicStrategy(GameObject gameObject)
+    private void Awake()
     {
         this.rb2d = gameObject.GetComponent<Rigidbody2D>();
 
@@ -22,6 +24,13 @@ public class KinematicStrategy
         this.contactFilter.SetLayerMask(LayerMask.GetMask("Wall"));
         this.contactFilter.useLayerMask = true;
     }
+
+    private void FixedUpdate()
+    {
+        this.rb2d.velocity = this.CalculateVelocity(this.rb2d.velocity, this.targetVelocity, this.IsGrounding());
+        this.rb2d.MovePosition(this.CalculatePosition(this.rb2d.velocity));
+    }
+
 
     // 指定した Rigidbody2D が地面に設置しているか判定する
     public bool IsGrounding()

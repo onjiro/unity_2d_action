@@ -2,6 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
+[RequireComponent(typeof(KinematicBody))]
 public class PlayerController : MonoBehaviour
 {
     public static PlayerController Instance { get; private set; }
@@ -14,12 +15,9 @@ public class PlayerController : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Rigidbody2D rb2d;
     private bool grounding;
-    // Physics Cycle の間に到達する最高速度
-    private Vector2 targetVelocity;
     private bool controllable = true;
     private List<ActionTrigger> actionTriggers = new List<ActionTrigger>();
-    // Kinematicオブジェクトの動作
-    private KinematicStrategy kinematic;
+    private KinematicBody kinematic;
     void OnEnable()
     {
         Instance = this;
@@ -32,16 +30,16 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        this.kinematic = new KinematicStrategy(gameObject);
         this.spriteRenderer = this.GetComponent<SpriteRenderer>();
         this.rb2d = this.GetComponent<Rigidbody2D>();
+        this.kinematic = this.GetComponent<KinematicBody>();
     }
 
     // Update is called once per frame
     void Update()
     {
         // y方向の速度は特に何もなければ現在の速度を維持
-        this.targetVelocity.y = this.rb2d.velocity.y;
+        this.kinematic.targetVelocity.y = this.rb2d.velocity.y;
 
         this.controllable = !this.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsTag("wait");
         if (this.controllable)
@@ -52,7 +50,7 @@ public class PlayerController : MonoBehaviour
             {
                 this.spriteRenderer.flipX = (inputX < 0);
             }
-            this.targetVelocity.x = inputX * this.maxSpeed;
+            this.kinematic.targetVelocity.x = inputX * this.maxSpeed;
 
             // ジャンプ
             if (Input.GetButtonDown("Jump") && this.grounding)
@@ -68,7 +66,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            this.targetVelocity.x = this.rb2d.velocity.x;
+            this.kinematic.targetVelocity.x = this.rb2d.velocity.x;
         }
     }
 
@@ -93,17 +91,14 @@ public class PlayerController : MonoBehaviour
         {
             if (this.grounding)
             {
-                this.targetVelocity.x = 0;
+                this.kinematic.targetVelocity.x = 0;
             }
         }
         this.actionTriggers.Clear();
 
-        this.rb2d.velocity = this.kinematic.CalculateVelocity(this.rb2d.velocity, this.targetVelocity, this.grounding);
-        this.rb2d.MovePosition(this.kinematic.CalculatePosition(this.rb2d.velocity));
-
         // アニメーションの変更
-        animator.SetFloat("velocityX", Mathf.Abs(this.targetVelocity.x));
-        animator.SetFloat("velocityY", this.targetVelocity.y);
+        animator.SetFloat("velocityX", Mathf.Abs(this.rb2d.velocity.x));
+        animator.SetFloat("velocityY", this.rb2d.velocity.y);
         animator.SetBool("grounding", this.grounding);
     }
 
@@ -112,7 +107,7 @@ public class PlayerController : MonoBehaviour
         switch (trigger)
         {
             case ActionTrigger.Jump:
-                this.targetVelocity.y = this.jumpInitialSpeed;
+                this.kinematic.targetVelocity.y = this.jumpInitialSpeed;
                 break;
             case ActionTrigger.Attack:
                 this.GetComponent<Animator>().SetTrigger("attacking");
@@ -130,8 +125,8 @@ public class PlayerController : MonoBehaviour
                 }
                 break;
             case ActionTrigger.Damaged:
-                this.targetVelocity.x = (this.spriteRenderer.flipX) ? 2 : -2;
-                this.targetVelocity.y = 1.8f;
+                this.kinematic.targetVelocity.x = (this.spriteRenderer.flipX) ? 2 : -2;
+                this.kinematic.targetVelocity.y = 1.8f;
                 this.GetComponent<Animator>().SetTrigger("damaged");
                 break;
             case ActionTrigger.Dead:
