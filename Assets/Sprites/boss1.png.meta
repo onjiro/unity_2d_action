@@ -71,6 +71,39 @@ TextureImporter:
   - first:
       213: -7352667628636927016
     second: oma_0
+  - first:
+      213: 3302389843610930800
+    second: boss1_idle_0
+  - first:
+      213: -8390898101439966472
+    second: boss1_jump_0
+  - first:
+      213: 9016804865907422583
+    second: boss1_damaged_0
+  - first:
+      213: -461065841450287754
+    second: boss1_walk_0
+  - first:
+      213: 9085140171787106599
+    second: boss1_walk_1
+  - first:
+      213: 6994103355235191571
+    second: boss1_walk_2
+  - first:
+      213: -3779150743464985754
+    second: boss1_charge_0
+  - first:
+      213: 6701464688658757327
+    second: boss1_charge_1
+  - first:
+      213: 3399042572776942612
+    second: boss1_upper_0
+  - first:
+      213: 8505135636221284028
+    second: boss1_upper_1
+  - first:
+      213: 8107268434762293745
+    second: boss1_oma_0
   externalObjects: {}
   serializedVersion: 10
   mipmaps:
@@ -392,7 +425,7 @@ TextureImporter:
       name: oma_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 128
         y: 0
         width: 128
         height: 128
